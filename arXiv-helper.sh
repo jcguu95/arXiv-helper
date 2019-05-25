@@ -14,14 +14,53 @@
 ## 	$ exiftool TheFileName.pdf -Identifier
 
 ## TODO
-## 1.   Though it is quite important, the current script
-##    does not pull the version info down! This will be updated
-##    in the future.
+## 1.   Fetch the version data as well.
 ## 2.   Write an arXiv downloader: only thing to do is to
 ##    input arXiv id!
 
-# Read the input file and its identifier
-InputFile=$1
+InputFile=$1 ## Read the input file.
+
+# ----------------------------------------------------------------------------------------
+# If AddingMode is on, add file identifier from file name.
+
+#
+#!/bin/bash
+
+## Input : 1905.03531.pdf
+## This program adds "arXiv:1905.03531.pdf" to the file identifier.
+##
+## Input : q-alg--9602027.pdf
+## This program adds "arXiv:q-alg/9602027" to the file identifier.
+##
+##   For more information about the arXiv identifier, please
+## refer to the official site
+## 	Understanding the arXiv identifier (https://arxiv.org/help/arxiv_identifier)
+##   To check if the file identifier is added, use the command
+## 	$ exiftool filename.pdf -identifier
+##
+
+ArXivId=$(echo $InputFile | sed 's/.pdf//' | sed 's/--/\//' )
+exiftool "$InputFile" -identifier="arXiv:$ArXivId" # Adding file identifier.
+mv "$InputFile" "tmp.$InputFile"
+mv "$InputFile_original" "$InputFile"
+
+# ----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Read the file identifier
 Identifier=$(exiftool $1 -identifier | sed 's/Identifier *: //')
 
 # Analyze the identifier and get the corresponding metadata from export.arxiv.org
