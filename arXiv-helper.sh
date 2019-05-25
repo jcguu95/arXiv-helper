@@ -6,13 +6,8 @@
 
 ## TODO
 ## 1.   Fetch the version data as well.
-## 2.   Write an arXiv downloader: only thing to do is to
 ##    input arXiv id!
-## 3.   Too many globle variables.. very dangerous!
-
-Download() {
-
-}
+## 2. Too many globle variables.. very dangerous!
 
 AddIdentifier() {
 	# ------------------------------------------------------------------------------------ #
@@ -68,10 +63,10 @@ AddMetaData() {
 			echo "ERROR: Not an arXiv identifier.. exit 1."
 			exit 1 ;;
 	esac
-	ArXivIdentifierAvoidingBackSlash=$(echo "$Identifier" | sed 's/\//--/' ) # Change '\' to '--' in those of Type-Prior2007.
+	ArXivIdentifierAvoidingSlash=$(echo "$Identifier" | sed 's/\//--/' ) # Change '/' to '--' in those of Type-Prior2007.
 	ArXivIdentifierWithoutVersion=$(echo "$Identifier" | sed 's/arXiv://' | sed 's/v[0-9]*//' ) # TODO: check if this regex is correct
 	ArXivMetaDataSiteURL="http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ArXivIdentifierWithoutVersion"
-	TempMetaDataFileName="tmp.$ArXivIdentifierAvoidingBackSlash.xml"
+	TempMetaDataFileName="tmp.$ArXivIdentifierAvoidingSlash.xml"
 	wget -O "$TempMetaDataFileName" "$ArXivMetaDataSiteURL" # Fetch metadata from the URL and output as an .xml file.
 	MetaContent=$(echo $(<"$TempMetaDataFileName") | sed 's/\n//g') # The newlines are cut-off.
 
@@ -95,7 +90,7 @@ AddMetaData() {
 	echo -e "\nMetadata changed! Use '$ exiftool FileName.pdf' to check new metadata."
 
 	# Rename the file and remove the temporary file.
-	NewFileName=$(echo "[$Authors]-$Title-[$ArXivIdentifierAvoidingBackSlash].pdf")
+	NewFileName=$(echo "[$Authors]-$Title-[$ArXivIdentifierAvoidingSlash].pdf")
 	cp "$InputFile" "$NewFileName" 		# renaming the files.
 	mv "$InputFile""_original" "$InputFile" # recovering the unprocessed files.
 	rm -rf $TempMetaDataFileName		# removing the temporary files.
@@ -115,15 +110,13 @@ AddMetaData() {
 }
 
 main() {
-	# One and only one of the following three modes must be executed each time.
+	# One and only one of the following two modes must be executed each time.
 	FileIdentifierAddingMode="OFF"
 	MetaDataAddingMode="OFF"
-	DownloadMode="OFF"
 	case "$1" in
-		-i) FileIdentifierAddingMode="ON" ;;
+		"-i") FileIdentifierAddingMode="ON" ;;
 		"-a") MetaDataAddingMode="ON" ;;
-		"-d") DownloadMode="ON" ;;
-		*) echo "ERROR: the first argument is either -i, -a, or -d. exit 1." ; exit 1 ;;
+		*) echo "ERROR: the first argument is either -i or -a. exit 1." ; exit 1 ;;
 	esac
 
 	shift ;
@@ -134,9 +127,6 @@ main() {
 	elif [[ $MetaDataAddingMode == "ON" ]]; then
 		echo "MetaDataAddingMode is on."
 		AddMetaData $1
-	elif [[ $DownloadMode == "ON" ]]; then
-		echo "DownloadMode is on."
-		Download $1
 	else	echo "Please specify a mode.. exit 1." ; exit 1 ;
 	fi
 }
