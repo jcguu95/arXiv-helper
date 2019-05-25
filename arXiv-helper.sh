@@ -115,8 +115,8 @@ main() {
 	MetaDataAddingMode="OFF"
 	case "$1" in
 		"-i") FileIdentifierAddingMode="ON" ;;
-		"-a") MetaDataAddingMode="ON" ;;
-		*) echo "ERROR: the first argument is either -i or -a. exit 1." ; exit 1 ;;
+		"-m") MetaDataAddingMode="ON" ;;
+		*) echo "ERROR: the first argument is either -i or -m. exit 1." ; exit 1 ;;
 	esac
 
 	shift ;
