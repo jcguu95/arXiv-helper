@@ -1,15 +1,14 @@
 #!/bin/bash
 
-
 ## Dependencies: internet connection, exiftool, wget
 
-
 ## TODO
-## 1.   Fetch the version data as well.
-##    input arXiv id!
+## 1. Fetch the version data as well.
 ## 2. Too many globle variables.. very dangerous!
+## 3. Is breaking the functions into several little subfunctions a good practice? If yes, do it.
 
 AddIdentifier() {
+
 	# ------------------------------------------------------------------------------------ #
 	#
 	#  Input : 1905.03531.pdf
@@ -30,6 +29,7 @@ AddIdentifier() {
 	exiftool "$InputFile" -identifier="arXiv:$ArXivId" # Adding file identifier.
 	mv "$InputFile" "FileIdentifierAdded_$InputFile"
 	mv "$InputFile""_original" "$InputFile"
+
 }
 
 AddMetaData() {
