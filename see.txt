@@ -39,49 +39,55 @@ case $Identifier in # TODO: the regex is not good. fix it!
 		exit 1 ;;
 esac
 
-ArXivIdentifierWithoutBackSlash=$(echo "$Identifier" | sed 's/\//---/' ) # Change '\' to '---' in those of Type-Prior2007.
-ArXivIdentifierWithoutVersion=$(echo "$Identifier" | sed 's/arXiv://' | sed 's/v[0-9]*//' ) # TODO: check if this regex is correct
-ArXivMetaDataSiteURL="http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ArXivIdentifierWithoutVersion"
-TempMetaDataFileName="tmp.$ArXivIdentifierWithoutBackSlash.xml"
-wget -O "$TempMetaDataFileName" "$ArXivMetaDataSiteURL" # Fetch metadata from the URL and output as an .xml file.
-MetaContent=$(echo $(<"$TempMetaDataFileName") | sed 's/\n//g') # The newlines are cut-off.
+ArXivIdentifier=$(echo "$Identifier" | sed 's/arXiv://')
+ArXivMetaDataSite="http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ActualAxXivID"
 
-#	ArXivID=$(echo $InputFile | sed 's/\.pdf//')
-#
-#	#
-#	# Determine which type is the arXiv-id
-#	case $ArXivID in
-	#	*"."*) Type="A" ;;
-	#	*"---"*) Type="B" ;;
-	#	*) Type="neither" ;;
-#	esac
-#
-#
-#	# Download the metadata online (export.arxiv.org/...) with respect to Type (A, B, or neither)
-#	case $Type in # require internet connection
-	#	"A")
-		#	echo "It is of type A."
-		#	ActualAxXivID=$ArXivID
-		#	wget -O "tmp.$ArXivID.xml" "http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ActualAxXivID"
-		#	;;
-#
-	#	"B")
-		#	echo "It is of type B"
-		#	ArXivIDTypeB1=$(echo $ArXivID | sed 's/---.*//' )
-		#	ArXivIDTypeB2=$(echo $ArXivID | sed 's/.*---//' )
-		#	ActualAxXivID="$ArXivIDTypeB1/$ArXivIDTypeB2"
-		#	echo "Type b: B1=$ArXivIDTypeB1 ; B2=$ArXivIDTypeB2 "
-		#	wget -O "tmp.$ArXivID.xml" "http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ActualAxXivID"
-		#	;;
-#
-	#	"neither")
-		#	echo "ERROR: File name is neither of type A nor B.. exit 1!" ;
-		#	exit 1 ;;
-#	esac
-#
-#
-#	# Input data from the downloaded metafiles.
-#	MetaContent=$(echo $(<tmp.$ArXivID.xml) | sed 's/\n//g')
+
+
+
+
+
+
+
+
+
+
+ArXivID=$(echo $InputFile | sed 's/\.pdf//')
+
+
+# Determine which type is the arXiv-id
+case $ArXivID in
+	*"."*) Type="A" ;;
+	*"---"*) Type="B" ;;
+	*) Type="neither" ;;
+esac
+
+
+# Download the metadata online (export.arxiv.org/...) with respect to Type (A, B, or neither)
+case $Type in # require internet connection
+	"A")
+		echo "It is of type A."
+		ActualAxXivID=$ArXivID
+		wget -O "tmp.$ArXivID.xml" "http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ActualAxXivID"
+		;;
+
+	"B")
+		echo "It is of type B"
+		ArXivIDTypeB1=$(echo $ArXivID | sed 's/---.*//' )
+		ArXivIDTypeB2=$(echo $ArXivID | sed 's/.*---//' )
+		ActualAxXivID="$ArXivIDTypeB1/$ArXivIDTypeB2"
+		echo "Type b: B1=$ArXivIDTypeB1 ; B2=$ArXivIDTypeB2 "
+		wget -O "tmp.$ArXivID.xml" "http://export.arxiv.org/oai2?verb=GetRecord&metadataPrefix=arXivRaw&identifier=oai:arXiv.org:$ActualAxXivID"
+		;;
+
+	"neither")
+		echo "ERROR: File name is neither of type A nor B.. exit 1!" ;
+		exit 1 ;;
+esac
+
+
+# Input data from the downloaded metafiles.
+MetaContent=$(echo $(<tmp.$ArXivID.xml) | sed 's/\n//g')
 
 Title=$(echo $MetaContent | sed 's/.*<title>//' | sed 's/<\/title>.*//')
 Authors=$(echo $MetaContent | sed 's/.*<authors>//' | sed 's/<\/authors>.*//')
