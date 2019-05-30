@@ -27,8 +27,6 @@ AddIdentifier() {
 	InputFile=$1
 	ArXivId=$(echo $InputFile | sed 's/.pdf//' | sed 's/--/\//' )
 	exiftool "$InputFile" -identifier="arXiv:$ArXivId" # Adding file identifier.
-	mv "$InputFile" "FileIdentifierAdded_$InputFile"
-	mv "$InputFile""_original" "$InputFile"
 
 }
 
@@ -71,10 +69,19 @@ AddMetaData() {
 	MetaContent=$(echo $(<"$TempMetaDataFileName") | sed 's/\n//g') # The newlines are cut-off.
 
 	# Extract things we want from the downloaded metadata file.
+	VersionInfo=$(	echo $MetaContent | \
+			sed 	-e '/version/ !d' -e 's/<\/version>/<\/version>\n/g' |
+			sed	-e '/version/ !d' \
+				-e 's/.*<ver/<ver/' \
+				-e 's/<ver.*="//' \
+				-e 's/"><date>/: /' \
+				-e 's/<\/date>.*// ' \
+				-e 's/.*/(&)/' \
+	)
 	Title=$(echo $MetaContent | sed 's/.*<title>//' | sed 's/<\/title>.*//')
 	Authors=$(echo $MetaContent | sed 's/.*<authors>//' | sed 's/<\/authors>.*//')
 	Categories="arXiv: $(echo $MetaContent | sed 's/.*<categories>//' | sed 's/<\/categories>.*//')"
-	Abstract=$(echo $MetaContent | sed 's/.*<abstract>//' | sed 's/<\/abstract>.*//')
+	Abstract=$(echo $MetaContent | sed 's/.*<abstract>//' | sed 's/<\/abstract>.*//' | sed "s/^[ \t]*//" )
 	case $MetaContent in ## Check if d.o.i. exists.
 		*"<doi>"*"</doi>"*)
 			DoiExist="true"
@@ -86,11 +93,11 @@ AddMetaData() {
 
 	# Change metadata of our .pdf files with 'exiftool'.
 	echo -e "Changing metadata of the file...\n"
-	exiftool $InputFile -title="$Title" -author="$Authors" -categories="$Categories" -doi="$Doi" -description="[$Identifier] [Abstract] $Abstract"
+	exiftool $InputFile -title="$Title" -author="$Authors" -categories="$Categories" -doi="$Doi" -description="[$Identifier] [Abstract] $Abstract [VersionInfo] $VersionInfo"
 	echo -e "\nMetadata changed! Use '$ exiftool FileName.pdf' to check new metadata."
 
 	# Rename the file and remove the temporary file.
-	NewFileName=$(echo "[$Authors]-$Title-[$ArXivIdentifierAvoidingSlash].pdf")
+	NewFileName=$(echo "$Title-[$Authors]-[$ArXivIdentifierAvoidingSlash].pdf")
 	cp "$InputFile" "$NewFileName" 		# renaming the files.
 	mv "$InputFile""_original" "$InputFile" # recovering the unprocessed files.
 	rm -rf $TempMetaDataFileName		# removing the temporary files.
@@ -99,13 +106,13 @@ AddMetaData() {
 	echo -e "\n\tReport:"
 	echo -e "\t\tArXivIdentifier = $Identifier"
 	echo -e "\t\tIdentifierType = $IdentifierType"
-	echo -e "\t\tTitle= $Title"
+	echo -e "\t\tVersionInfo = $VersionInfo"
+	echo -e "\t\tTitle = $Title"
 	echo -e "\t\tAuthors = $Authors"
 	echo -e "\t\tCategories = $Categories"
 	echo -e "\t\tDoiExist = $DoiExist"
 	echo -e "\t\tDoi = $Doi"
-	echo -e "\t\tAbstract ="
-	echo	"$Abstract"
+	echo -e "\t\tAbstract = $Abstract"
 
 }
 
