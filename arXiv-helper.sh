@@ -3,9 +3,8 @@
 ## Dependencies: internet connection, exiftool, wget
 
 ## TODO
-## 1. Fetch the version data as well.
-## 2. Too many globle variables.. very dangerous!
-## 3. Is breaking the functions into several little subfunctions a good practice? If yes, do it.
+## 1. Too many globle variables.. very dangerous!
+## 2. Is breaking the functions into several little subfunctions a good practice? If yes, do it.
 
 AddIdentifier() {
 
@@ -17,6 +16,9 @@ AddIdentifier() {
 	#  Input : q-alg--9602027.pdf
 	#  This program adds "arXiv:q-alg/9602027" to the file identifier.
 	#
+	#  Input : q-alg--9602027v1.pdf
+	#  This program adds "arXiv:q-alg/9602027v1" to the file identifier.
+
 	#  For more information about the arXiv identifier, please
 	#  refer to the official site
 	# 	 Understanding the arXiv identifier (https://arxiv.org/help/arxiv_identifier)
@@ -103,16 +105,16 @@ AddMetaData() {
 	rm -rf $TempMetaDataFileName		# removing the temporary files.
 
 	# Report
-	echo -e "\n\tReport:"
-	echo -e "\t\tArXivIdentifier = $Identifier"
-	echo -e "\t\tIdentifierType = $IdentifierType"
-	echo -e "\t\tVersionInfo = $VersionInfo"
-	echo -e "\t\tTitle = $Title"
-	echo -e "\t\tAuthors = $Authors"
-	echo -e "\t\tCategories = $Categories"
-	echo -e "\t\tDoiExist = $DoiExist"
-	echo -e "\t\tDoi = $Doi"
-	echo -e "\t\tAbstract = $Abstract"
+	echo -e "\n====== Report ======"
+	echo -e "  ArXivIdentifier = $Identifier"
+	echo -e "  IdentifierType = $IdentifierType"
+	echo -e "  VersionInfo = $VersionInfo"
+	echo -e "  Title = $Title"
+	echo -e "  Authors = $Authors"
+	echo -e "  Categories = $Categories"
+	echo -e "  DoiExist = $DoiExist"
+	echo -e "  Doi = $Doi"
+	echo	"  Abstract = $Abstract"
 
 }
 
@@ -127,17 +129,19 @@ main() {
 	esac
 
 	shift ;
-
-	if [[ $FileIdentifierAddingMode == "ON" ]]; then
-		echo "FileIdentifierAddingMode is on"
-		AddIdentifier $1
-	elif [[ $MetaDataAddingMode == "ON" ]]; then
-		echo "MetaDataAddingMode is on."
-		AddMetaData $1
-	else	echo "Please specify a mode.. exit 1." ; exit 1 ;
-	fi
+	InputArray=("$@")
+	for object in "${InputArray[@]}"; do
+		if [[ $FileIdentifierAddingMode == "ON" ]]; then
+			echo "FileIdentifierAddingMode is on"
+			AddIdentifier "$object"
+		elif [[ $MetaDataAddingMode == "ON" ]]; then
+			echo "MetaDataAddingMode is on."
+			AddMetaData "$object"
+		else	echo "Please specify a mode.. exit 1." ; exit 1 ;
+		fi
+	done
 }
 
-main $@ ;
+main "$@" ;
 
 exit
